@@ -8,7 +8,7 @@ from src.utils.tools import NestedNamespace
 def get_moon_args(args_list=None) -> Namespace:
     parser = ArgumentParser()
     parser.add_argument("--tau", type=float, default=0.5)
-    parser.add_argument("--mu", type=float, default=5)
+    parser.add_argument("--mu", type=float, default=0.0001)
     return parser.parse_args(args_list)
 
 

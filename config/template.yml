@@ -15,12 +15,12 @@ parallel: # It's fine to keep these configs.
   num_workers: 2
 
 common:
-  dataset: mnist
+  dataset: cifar10
   seed: 42
   model: lenet5
   join_ratio: 0.1
-  global_epoch: 100
-  local_epoch: 5
+  global_epoch: 1000
+  local_epoch: 1
   finetune_epoch: 0
   batch_size: 32
   test_interval: 100

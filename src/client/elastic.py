@@ -4,6 +4,7 @@ from typing import Any
 
 import torch
 from torch.utils.data import DataLoader, Subset
+from torch.nn.functional import cosine_similarity, relu
 
 from src.client.fedavg import FedAvgClient
 from src.utils.tools import trainable_params
@@ -12,6 +13,7 @@ from src.utils.tools import trainable_params
 class ElasticClient(FedAvgClient):
     def __init__(self, **commons):
         super().__init__(**commons)
+
         self.layer_num = len(trainable_params(self.model))
         self.sensitivity = torch.zeros(self.layer_num, device=self.device)
         self.sampled_trainset = Subset(self.dataset, indices=[])
@@ -41,7 +43,7 @@ class ElasticClient(FedAvgClient):
             logits = self.model(x)
             loss = self.criterion(logits, y)
             grads_norm = [
-                torch.norm(layer_grad[0]) ** 2
+                torch.norm(layer_grad[0]) ** 2 + torch.norm(layer_grad[0],p=1) ** 2
                 for layer_grad in torch.autograd.grad(
                     loss, trainable_params(self.model)
                 )
@@ -51,6 +53,10 @@ class ElasticClient(FedAvgClient):
                     self.args.elastic.mu * self.sensitivity[i]
                     + (1 - self.args.elastic.mu) * grads_norm[i].abs()
                 )
+            # for i in range(len(grads_norm)):
+            #     # Polyak-style averaging
+            #     self.training_steps += 1
+            #     self.sensitivity[i] = (self.sensitivity[i] * (self.training_steps - 1) + grads_norm[i].abs()) / self.training_steps
 
         self.train_with_eval()
 
@@ -62,3 +68,4 @@ class ElasticClient(FedAvgClient):
         client_package = super().package()
         client_package["sensitivity"] = self.sensitivity.cpu().clone()
         return client_package
+

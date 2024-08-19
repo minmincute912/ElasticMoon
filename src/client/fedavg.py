@@ -189,7 +189,7 @@ class FedAvgClient:
                     self.global_regular_model_params.values(),
                 )
             }
-            client_package.pop("regular_model_params")
+            # client_package.pop("regular_model_params")
         return client_package
 
     def fit(self):
